@@ -20,8 +20,15 @@ echo -e "${BOLD}  🏠 Welcome to Founder HQ Setup${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
 echo ""
 
-# Get the user's name
-read -p "What's your first name? " FOUNDER_NAME
+# Get the user's name (handle both direct run and curl | bash)
+if [ -t 0 ]; then
+    # Running directly - stdin is a terminal
+    read -p "What's your first name? " FOUNDER_NAME
+else
+    # Running via curl | bash - need to read from /dev/tty
+    echo -n "What's your first name? "
+    read FOUNDER_NAME < /dev/tty
+fi
 FOUNDER_NAME=${FOUNDER_NAME:-Founder}
 
 echo ""
@@ -33,7 +40,12 @@ HQ_DIR="$HOME/Founder-HQ"
 
 if [ -d "$HQ_DIR" ]; then
     echo -e "${YELLOW}Looks like you already have a Founder-HQ folder.${NC}"
-    read -p "Want to add missing files? (y/n) " -n 1 -r
+    echo -n "Want to add missing files? (y/n) "
+    if [ -t 0 ]; then
+        read -n 1 -r REPLY
+    else
+        read -n 1 -r REPLY < /dev/tty
+    fi
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         echo "No problem! Run this again anytime."
